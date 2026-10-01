@@ -42,7 +42,7 @@ current `fobj.c` and `mtx.c` on the host as the Xbox builds them
 (`TARGET_XBOX`, SSE, `-ffp-contract=off`) next to `tests/xbox/anim_mtx_ref.c`,
 a verbatim copy of the code before the rewrites, and compares:
 `pc_sincosf` with `pc_sinf`/`pc_cosf` (16M floats spread over all 2^32 and
-every branch boundary; `--full` takes all 2^32, a few minutes), `parseFloat`
+every branch boundary; `--full` takes all 2^32, ~11 minutes), `parseFloat`
 for every frac byte and 16-bit pattern, the spline with `1/fterm` in float
 for every u16, 20000 random keyframe streams (every opcode and frac type,
 pack and wait encodings, truncated streams and garbage) run frame by frame
