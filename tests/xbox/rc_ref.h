@@ -1,6 +1,7 @@
-/* nv2a_rc.h - GameCube TEV -> NV2A register combiners (nv2a_rc.c). */
-#ifndef NV2A_RC_H
-#define NV2A_RC_H
+/* rc_ref.h - nv2a_rc.h before swap tables (tests/xbox/rc_ref.c), types renamed so
+ * test_rc.c can include it next to the current header. */
+#ifndef RC_REF_H
+#define RC_REF_H
 #include <stdint.h>
 
 #define RC_MAX_TEV 16
@@ -13,22 +14,19 @@ typedef struct {
     uint8_t kcsel, kasel;
     int8_t unit;       /* NV2A texture unit sampled by this stage, -1: none */
     uint8_t ras;       /* 0: colour channel 0, 1: channel 1, 2: zero */
-    /* swap tables (GXSetTevSwapMode): the source channel of r, g, b and a,
-     * two bits each from bit 0; RC_SWZ_ID passes them through */
-    uint8_t tex_swz, ras_swz;
+    uint8_t tex_alpha_bcast, ras_alpha_bcast;   /* swap table replicates alpha */
     uint8_t pad;
-} RcStage;
-
-#define RC_SWZ_ID 0xE4   /* r g b a = 0 1 2 3 */
+} RefStage;
 
 typedef struct {
     uint8_t nstages;
     uint8_t units_used;    /* bit u: texture unit u carries a texture */
     uint8_t v1_used;       /* colour channel 1 reaches a stage */
     uint8_t pad;
-    RcStage st[RC_MAX_TEV];
-} RcCfg;
+    RefStage st[RC_MAX_TEV];
+} RefCfg;
 
+#ifndef NV2A_RC_H
 /* where a combiner constant comes from, resolved per draw */
 enum {
     RREF_NONE = 0,
@@ -36,10 +34,10 @@ enum {
     RREF_TEVREG_A,
     RREF_KONST_C,      /* param: kcsel */
     RREF_KONST_A,      /* param: kasel */
-    RREF_FIXED,        /* param: index into nv2a.c's k_rc_fixed (rgb and a): 0-3 the movie's
-                          YUV program, 4-6 the unit vectors r, g, b (swap-table dot products) */
+    RREF_FIXED,        /* param: index into nv2a.c's k_rc_fixed (rgb and a) */
 };
 #define RREF(t, p) ((uint16_t)(((t) << 8) | ((p) & 0xFF)))
+#endif
 
 typedef struct {
     int nstages;
@@ -49,9 +47,8 @@ typedef struct {
     uint16_t cref[RC_MAX_STAGES][4];   /* C0.rgb C0.a C1.rgb C1.a */
     uint16_t fref[4];
     int approximated;
-    int swizzled;                      /* combiner stages added for swap tables */
-} RcProg;
+} RefProg;
 
-void rc_compile(const RcCfg* cfg, RcProg* out);
+void rc_ref_compile(const RefCfg* cfg, RefProg* out);
 
 #endif
